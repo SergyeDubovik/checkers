@@ -13,7 +13,6 @@ public class Board {
      * Responsible for generating a brand new board
      *
      * @param size The size of the board (8 for common checkers)
-     *             NOTE: currently will probably break with other than 8 as size!
      */
     public Board(int size) {
         // new board is just empty

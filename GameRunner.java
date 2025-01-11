@@ -8,7 +8,8 @@ import java.util.Scanner;
  */
 public class GameRunner {
     // game constants
-    public static final int SIZE = 9;
+    public static final int MIN_BOARD_SIZE = 7;
+    public static final int MAX_BOARD_SIZE = 12;
 
     // define globally used variables
     private static Scanner input = new Scanner(System.in);
@@ -19,18 +20,26 @@ public class GameRunner {
 
     public static void main(String[] args) {
         // generate basic board and setup
-        Board board = new Board(SIZE);
+        Board board = new Board(askBoardSize());
 
         // define abstract classes, to be assigned a concrete class after deciding gamemode
         Player player1;
         Player player2;
 
-        if (askIfTwoPlayer()) {
+        GameMode gameMode = askGameMode();
+
+        if (gameMode == GameMode.HUMAN_VS_HUMAN) {
             player1 = new HumanPlayer(true);
             player2 = new HumanPlayer(false);
-        } else {
+        } else if (gameMode == GameMode.HUMAN_VS_AI) {
             player1 = new HumanPlayer(true);
             player2 = new AIPlayer(false);
+        } else if (gameMode == GameMode.AI_VS_AI) {
+            player1 = new AIPlayer(true);
+            player2 = new AIPlayer(false);
+        } else {
+            System.out.println("No game mode selected");
+            return;
         }
         clearScreen();
 
@@ -47,34 +56,64 @@ public class GameRunner {
         }
     }
 
-    /**
-     * Queries the user to determine the requested gamemode
-     *
-     * @return Returns true if the user wants two-player mode,
-     * else false if they want one-player mode.
-     */
-    private static boolean askIfTwoPlayer() {
-        // keep asking to get a valid response
+    private static int askBoardSize() {
         while (true) {
             // display message
             clearScreen();
             System.out.println("*******Welcome to checkers!*******\n");
+            System.out.println("Please enter board size: ");
+            System.out.println("Minimal size - " + MIN_BOARD_SIZE);
+            System.out.println("Maximal size - " + MAX_BOARD_SIZE);
+            System.out.println("\nEnter a number: ");
+
+            String response = input.nextLine();
+            int boardSize;
+            try {
+                boardSize = Integer.parseInt(response);
+            } catch (NumberFormatException e) {
+                System.out.println("Please input correct number below");
+                continue;
+            }
+            if (boardSize < MIN_BOARD_SIZE || boardSize > MAX_BOARD_SIZE) {
+                System.out.println("Please input correct number below");
+            } else {
+                return boardSize;
+            }
+
+        }
+    }
+
+    /**
+     * Queries the user to determine the requested gamemode
+     *
+     * @return Returns chosen GameMode
+     */
+    private static GameMode askGameMode() {
+        // keep asking to get a valid response
+        while (true) {
+            // display message
+            clearScreen();
             System.out.println("Enter 'exit' to exit at any point (or 0 when moving a piece).\n");
-            System.out.println("We offer two game modes:");
+            System.out.println("We offer three game modes:");
             System.out.println("[1] 1 Player Mode (vs Computer) - EXPERIMENTAL");
             System.out.println("[2] 2 Player Mode");
+            System.out.println("[3] 2 Computer v Computer Mode");
             System.out.println("\nWhich one would you like to play? Enter a number: ");
 
-            // ask for String, but only accept "1" or "2"
+            // ask for String, but only accept "1", "2" or "3"
             String response = input.nextLine();
             switch (response.trim()) {
                 case "1":
-                    return false;
+                    return GameMode.HUMAN_VS_AI;
                 case "2":
-                    return true;
+                    return GameMode.HUMAN_VS_HUMAN;
+                case "3":
+                    return GameMode.AI_VS_AI;
                 case "exit":
                     endGameNow();
-                    return true;
+                    return null;
+                default:
+                    System.out.println("Please input correct number below");
             }
         }
     }
